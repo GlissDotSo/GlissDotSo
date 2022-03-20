@@ -1,0 +1,29 @@
+{
+  "name": "@glissdotso/prettier",
+  "version": "0.0.1",
+  "private": true,
+  "homepage": "https://github.com/GlissDotSo/GlissDotSo",
+  "bugs": {
+    "url": "https://github.com/GlissDotSo/GlissDotSo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GlissDotSo/GlissDotSo.git"
+  },
+  "license": "UNLICENSED",
+  "main": "src/index.js",
+  "files": [
+    "src/index.js"
+  ],
+  "dependencies": {
+    "prettier": "^2.6.0",
+    "prettier-plugin-packagejson": "^2.2.16",
+    "prettier-plugin-solidity": "^1.0.0-beta.19",
+    "prettier-plugin-sort-json": "^0.0.2",
+    "prettier-plugin-tailwindcss": "^0.1.8"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}

@@ -1,1 +1,1 @@
-# GlissDotSo
+# Gliss.so

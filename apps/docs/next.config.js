@@ -1,7 +1,7 @@
 const { withSentryConfig } = require("@sentry/nextjs");
 const withPlugins = require("next-compose-plugins");
 const { withPlausibleProxy } = require("next-plausible");
-const withTM = require("next-transpile-modules")(["@glissdotso/core"]);
+const withTM = require("next-transpile-modules")();
 const withNextra = require("nextra")({
   theme: "nextra-theme-docs",
   themeConfig: "./theme.config.js",

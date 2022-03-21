@@ -7,8 +7,5 @@ module.exports = {
     require("@tailwindcss/forms"),
     require("@tailwindcss/typography"),
   ],
-  content: [
-    "../../components/core/**/*.{js,ts,jsx,tsx}",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./src/**/*.{js,ts,jsx,tsx}"],
 };

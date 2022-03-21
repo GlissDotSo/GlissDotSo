@@ -1,4 +1,3 @@
-const { withSentryConfig } = require("@sentry/nextjs");
 const withPlugins = require("next-compose-plugins");
 const { withPlausibleProxy } = require("next-plausible");
 const withTM = require("next-transpile-modules")();
@@ -8,21 +7,7 @@ const withNextra = require("nextra")({
   unstable_staticImage: true,
 });
 
-const SentryWebpackPluginOptions = {
-  silent: false,
-};
-
-const plugins = [
-  nextConfig => {
-    if (process.env.VERCEL_ENV === "development") {
-      return {};
-    }
-    return withSentryConfig(nextConfig, SentryWebpackPluginOptions);
-  },
-  withNextra,
-  withPlausibleProxy,
-  withTM,
-];
+const plugins = [withNextra, withPlausibleProxy, withTM];
 
 /**
  * @type {import('next').NextConfig}

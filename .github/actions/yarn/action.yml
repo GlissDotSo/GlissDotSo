@@ -1,21 +1,14 @@
 name: Yarn
 description: "Yarn workflow composite"
-inputs:
-  token:
-    description: "Github token secret"
-    required: true
 runs:
   using: "composite"
   steps:
     - if: github.event_name == 'push'
       uses: actions/checkout@v2
-      with:
-        token: ${{ inputs.token }}
     - if: github.event_name == 'pull_request'
       uses: actions/checkout@v2
       with:
         ref: ${{ github.event.pull_request.head.ref }}
-        token: ${{ inputs.token }}
     - id: nvm
       run: |
         echo ::set-output name=NVMRC::$(cat .nvmrc)

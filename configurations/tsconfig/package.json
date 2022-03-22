@@ -1,0 +1,26 @@
+{
+  "name": "@glissdotso/tsconfig",
+  "version": "0.0.1",
+  "private": true,
+  "homepage": "https://github.com/GlissDotSo/GlissDotSo",
+  "bugs": {
+    "url": "https://github.com/GlissDotSo/GlissDotSo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GlissDotSo/GlissDotSo.git"
+  },
+  "license": "UNLICENSED",
+  "main": "index.js",
+  "files": [
+    "base.json",
+    "node.json",
+    "next.json",
+    "react.json"
+  ],
+  "dependencies": {},
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}

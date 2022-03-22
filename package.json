@@ -1,0 +1,69 @@
+{
+  "name": "root",
+  "version": "0.0.1",
+  "private": true,
+  "homepage": "https://www.gliss.so",
+  "bugs": {
+    "url": "https://github.com/GlissDotSo/GlissDotSo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GlissDotSo/GlissDotSo.git"
+  },
+  "license": "UNLICENSED",
+  "workspaces": [
+    "apps/*",
+    "components/*",
+    "configurations/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "cypress:install": "CYPRESS_INSTALL_BINARY=~/Downloads/cypress.zip yarn install",
+    "eslint:cmd": "eslint --config .eslintrc.js --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint",
+    "eslint:fix": "yarn run eslint:cmd . --fix",
+    "eslint:lint": "yarn run eslint:cmd .",
+    "fix": "concurrently 'yarn:*:fix'",
+    "lint": "concurrently 'yarn:*:lint'",
+    "ncu:check": "ncu --deep -p yarn",
+    "ncu:upgrade": "ncu --deep -u -p yarn",
+    "npm-package-json:lint": "npmPkgJsonLint .",
+    "prepare": "husky install",
+    "prepublishOnly": "pinst --disable",
+    "prettier:cmd": "prettier",
+    "prettier:fix": "yarn run prettier:cmd --write .",
+    "prettier:lint": "yarn run prettier:cmd --check .",
+    "postpublish": "pinst --enable",
+    "release": "changeset publish",
+    "version-packages": "changeset version && yarn run fix"
+  },
+  "npmpackagejsonlint": {
+    "extends": "npm-package-json-lint-config-default"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.21.1",
+    "@commitlint/config-conventional": "^16.2.1",
+    "commitlint": "^16.2.3",
+    "concurrently": "^7.0.0",
+    "git-cz": "^4.8.0",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.3.7",
+    "npm-check-updates": "^12.5.4",
+    "npm-package-json-lint": "^6.2.0",
+    "npm-package-json-lint-config-default": "^5.0.0",
+    "prettier": "^2.6.0",
+    "prettier-plugin-packagejson": "^2.2.16",
+    "prettier-plugin-solidity": "^1.0.0-beta.19",
+    "prettier-plugin-sort-json": "^0.0.2",
+    "prettier-plugin-tailwindcss": "^0.1.8",
+    "rimraf": "^3.0.2",
+    "shx": "^0.3.4",
+    "tsconfig-paths-webpack-plugin": "^3.5.2",
+    "tsup": "^5.12.1",
+    "turbo": "^1.1.6",
+    "typescript": "^4.6.2",
+    "vercel": "^24.0.0"
+  },
+  "packageManager": "yarn@1.22.17"
+}

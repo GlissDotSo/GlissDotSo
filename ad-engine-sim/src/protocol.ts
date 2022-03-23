@@ -1,15 +1,24 @@
 
 import { EventEmitter } from 'events'
 import { SmartContract } from './helpers'
-import { Publication } from './types'
+import { ProfileId, Publication } from './types'
+
+export interface CreatePubArgs {
+    ts: number
+    profileId: ProfileId
+}
 
 export class Protocol {
     riskFactor = 0.1
-    posts = []
-
+    pubCount = 0
     events = new EventEmitter()
 
-    createPub(pub: Publication) {
+    createPub(args: CreatePubArgs): number {
+        let pub = {
+            ...args,
+            id: this.pubCount++,
+        }
         this.events.emit('PubCreated', pub)
+        return pub.id
     }
 }

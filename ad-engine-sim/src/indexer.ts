@@ -1,20 +1,55 @@
+import _ from "lodash"
+import { AttentionMarketMaker, Bid, FillEvent } from "./attention_mm"
+import { Protocol } from "./protocol"
 import { Publication } from "./types"
 
+export interface PromotedPublication {
+    pub: Publication
+    bid: Bid
+}
+
 export class Indexer {
-    pubs: Publication[] = []
+    pubs: Record<number, Publication> = {}
+    promotedPubs: Record<number, PromotedPublication> = {}
 
-    constructor() { }
+    constructor(public protocol: Protocol, public attentionMarketMaker: AttentionMarketMaker) {
+        protocol.events.on('PubCreated', (pub) => {
+            this.onPub(pub)
+        })
 
-    onPub(feedId: string, newPub: Publication) {
+        attentionMarketMaker.events.on('Fill', (fillEvent) => {
+            this.onAMMFill(fillEvent)
+        })
+    }
+
+    onPub(newPub: Publication) {
         // Store post.
-        this.pubs.push(newPub)
+        this.pubs[newPub.id] = newPub
     }
 
-    getPubs() {
-        return this.pubs
+    onAMMFill(fillEvent: FillEvent) {
+        const bid = fillEvent.bid
+        const pub = this.pubs[bid.pubId]
+        let promotedPub: PromotedPublication = {
+            pub,
+            bid
+        }
+        this.promotedPubs[pub.id] = promotedPub
     }
 
-    getFollowFeedPubs(profileId: string) {
-        return this.pubs
+    getPubs(): Publication[] {
+        return Object.values(this.pubs)
+    }
+
+    getPromotedPubs(): PromotedPublication[] {
+        return Object.values(this.promotedPubs)
+    }
+
+    // Get pubs EXCLUSIVE of promoted pubs.
+    getFollowerPubs(): Publication[] {
+        return _.filter(
+            this.getPubs(),
+            pub => !this.promotedPubs[pub.id]
+        ) as Publication[]
     }
 }

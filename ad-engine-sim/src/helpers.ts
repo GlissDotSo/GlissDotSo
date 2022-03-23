@@ -22,9 +22,13 @@ export class EVMEnvironment {
 
 export class SmartContract {
     env: EVMEnvironment
+    address: string
 
-    constructor(env: EVMEnvironment) {
+    constructor(env: EVMEnvironment, address: string) {
         this.env = env
+        // Allow smart contract to set its own address.
+        // This is useful for human labels.
+        this.address = address
     }
 
     block() {

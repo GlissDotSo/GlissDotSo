@@ -1,4 +1,5 @@
 import _ from "lodash"
+import { BIDDER_PROFILE_PREFIX } from "./actors/influence_buyer"
 import { AttentionMarketMaker, Bid, FillEvent } from "./attention_mm"
 import { Protocol } from "./protocol"
 import { Publication } from "./types"
@@ -49,7 +50,10 @@ export class Indexer {
     getFollowerPubs(): Publication[] {
         return _.filter(
             this.getPubs(),
-            pub => !this.promotedPubs[pub.id]
+            pub => {
+                // In prod, this would filter by posts only from a user's following.
+                return pub.profileId.startsWith(BIDDER_PROFILE_PREFIX)
+            }
         ) as Publication[]
     }
 }

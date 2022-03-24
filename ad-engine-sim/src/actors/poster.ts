@@ -2,6 +2,8 @@ import _, { sample } from "lodash"
 import { Simulation } from "../simulation/simulation"
 import { BaseActor } from "../simulation/actor"
 import { mockUsers, protocol } from "../simulation/setup"
+import { readFileSync } from "fs";
+import { join } from "path";
 
 function randn_bm() {
     let u = 0, v = 0;
@@ -15,70 +17,66 @@ function randn_bm() {
 
 export class Poster extends BaseActor {
     state = 0
-    posts: Record<number, any[]> = {}
+    // posts: Record<number, any[]> = {}
+    data: any
 
     targetRate = 175
     targetRatePer = 60 * 60 * 2
 
     constructor(sim: Simulation) {
         super(sim)
+
+        const brownianProcessData = readFileSync(join(__dirname, `../../plotting/out/brownian.txt`)).toString().split(' ').map(parseFloat)
+        if (brownianProcessData.length != sim.totalTimesteps) {
+            throw new Error(`Brownian process needs to have same number of data points as there are timesteps (${brownianProcessData.length} != ${sim.totalTimesteps}). Regenerate it in the Jupyter notebook, in plotting/Main.ipynb.`)
+        }
+        this.data = brownianProcessData
     }
 
     // Make posts.
     step(t: number): void {
-        if (t % this.targetRatePer === 0) {
-            // Generate a set of posts for the next hour.
-            this.posts = {}
+        // if (t % this.targetRatePer === 0) {
+        //     // Generate a set of posts for the next hour.
+        //     this.posts = {}
 
-            // Generate `targetRatePerHour` of posts, with
-            // post times sampled from within the hour.
-            // const jitter = 0.8 * this.targetRate
-            // const rate = this.targetRate + _.random(-jitter, jitter)
+        //     // Generate `targetRatePerHour` of posts, with
+        //     // post times sampled from within the hour.
+        //     // const jitter = 0.8 * this.targetRate
+        //     // const rate = this.targetRate + _.random(-jitter, jitter)
 
-            // Generates a nice wave between (0,1)
-            const rate = (1 + (Math.cos(t))) / 2
-            // console.log('rate', rate)
-            // const sample = x => (1 + (Math.cos(x))) / 2
+        //     // Generates a nice wave between (0,1)
+        //     const rate = (1 + (Math.cos(t))) / 2
 
-            // Model posting as a probability distribution,
-            // where we do n independent trials corresponding to n timepoints,
-            // where the probability of making a post P, is 1/n
-            const prob = this.targetRate / this.targetRatePer
-            const samples = [...Array(this.targetRatePer).keys()].map(t => randn_bm())
+        //     const nSamples = Math.floor(rate * this.targetRate / this.targetRatePer)
+        //     const samples = [...Array(nSamples).keys()].map(t => randn_bm())
 
-            // console.log([...Array(this.targetRatePer).keys()].map(t => stdNormalDistribution(Math.random())).toString() )
-            // const distribution = stats.binomialCumulativeDistribution(this.targetRate, 1 / this.targetRatePer)
-            // console.log('dist', distribution.toString())
-            const distribution = []
+        //     for (let x of samples) {
+        //         const ts = Math.floor(t + x * this.targetRatePer)
 
-            // for (let i = 0; i < rate; i++) {
-            for (let x of samples) {
-                // for (let i = 0; i < this.targetRatePer; i++) {
-                // const n1 = sample(t)
-                // const n2 = sample(t+1)
+        //         const pub = {
+        //             ts: ts,
+        //             profileId: sample(mockUsers) as string
+        //         }
 
-                // const ts = t + _.random(0, this.targetRatePer)
-                const ts = Math.floor(t + x * this.targetRatePer)
+        //         _.set(
+        //             this.posts,
+        //             ts,
+        //             [..._.get(this.posts, ts, []), pub]
+        //         )
+        //     }
+        // }
 
-                const pub = {
-                    ts: ts,
-                    profileId: sample(mockUsers) as string
-                }
+        // // Generate posts.
+        // for (let pub of _.get(this.posts, [t], [])) {
+        //     protocol.createPub(pub)
+        // }
+        const scale = 10
 
-                _.set(
-                    this.posts,
-                    ts,
-                    [..._.get(this.posts, ts, []), pub]
-                )
+        for (let i = 0; i < this.data[t]; i++) {
+            const pub = {
+                ts: t,
+                profileId: sample(mockUsers) as string
             }
-        }
-
-        // Generate posts.
-        for (let pub of _.get(this.posts, [t], [])) {
-            // const pub = {
-            //     ts: t,
-            //     profileId: sample(mockUsers) as string
-            // }
             protocol.createPub(pub)
         }
     }

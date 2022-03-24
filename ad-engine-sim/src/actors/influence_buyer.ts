@@ -3,6 +3,7 @@ import { AttentionMarketMakerBidData } from "../attention_mm"
 import { BaseActor } from "../simulation/actor"
 import { attentionMarketMaker, feedEngine, protocol } from "../simulation/setup"
 
+export const BIDDER_PROFILE_PREFIX = "Bidder"
 export class InfluenceBuyer extends BaseActor {
     openBiddingRounds: number[] = []
 
@@ -26,7 +27,7 @@ export class InfluenceBuyer extends BaseActor {
 
         // Make a bid.
         const amount = _.random(1, 15)
-        const bidderAddress = "Bidder001"
+        const bidderAddress = BIDDER_PROFILE_PREFIX + "001"
 
         const pubId = protocol.createPub({
             ts: t,

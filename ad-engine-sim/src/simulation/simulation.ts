@@ -3,8 +3,11 @@ import { InfluenceBuyer } from '../actors/influence_buyer';
 import { Poster } from '../actors/poster';
 import { EVMEnvironment } from '../helpers';
 import { IActor } from '../simulation/actor';
-import { feedEngine, NUM_MOCK_USERS, simulation } from '../simulation/setup';
-
+import { feedEngine, NUM_MOCK_USERS, protocol, simulation } from '../simulation/setup';
+import { writeFileSync } from 'fs';
+import { join } from 'path';
+import _ from 'lodash';
+import { Counter } from '../helpers'
 export class Simulation {
     // One time step is a second in our model.
     // Length of simulation is 4hrs.
@@ -34,6 +37,12 @@ export class Simulation {
             new InfluenceBuyer(this)
         ]
 
+        // Data instrumentation.
+        let postsAtTime = new Counter(0)
+        protocol.events.on('PubCreated', () => {
+            postsAtTime.inc([this.time], 1)
+        })
+
         // Run simulation.
         for (let i = 0; i < this.totalTimesteps; i++) {
             this.step()
@@ -54,15 +63,37 @@ export class Simulation {
             console.log(str.join(' '))
         })
 
-        /**
-         * Create 25 profiles
-         * For each profile, create some posts
-         * Over a period of 24hrs.
-         * Now post some ads
-         * Render the feed
-         * @username @time @isPromoted
-         * Verify invariant holds
-         */
+        let feedActivityData: any[] = []
+        let cumulativePostsData: any[] = []
+        for(let i = 0; i < this.totalTimesteps; i += 15) {
+            const feedId = ""
+            const faf = feedEngine.getFeedActivityFactor(feedId, i)
+            feedActivityData.push([i, faf])
+        }
+
+        for(let i = 0; i < this.totalTimesteps; i++) {
+            let cumulativePosts = 0
+            if (i === 0) {
+                cumulativePosts += postsAtTime.get([i])
+            } else {
+                cumulativePosts += cumulativePostsData[i - 1][1] + postsAtTime.get([i])
+            }
+            cumulativePostsData.push([i, cumulativePosts])
+        }
+        
+        const writeDataLog = (data: any[], file: string) => {
+            const content: string = data.map(data => data.join(' ')).join('\n')
+            const path = join(__dirname, `../../plotting/data/${file}`)
+            writeFileSync(
+                path,
+                content,
+                'utf-8'
+            )
+        }
+
+        writeDataLog(feedActivityData, 'feedActivityData.txt')
+        writeDataLog(postsAtTime.toEntries(), 'postsAtTime.txt')
+        writeDataLog(cumulativePostsData, 'cumulativePosts.txt')
     }
 
     step() {

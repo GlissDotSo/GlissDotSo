@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "baseUrl": "."
+  },
+  "exclude": ["node_modules"],
+  "extends": "@glissdotso/tsconfig/contracts.json",
+  "include": [
+    "./abi/**/*.json",
+    "./deploy",
+    "./deployments/**/*.json",
+    "./scripts",
+    "./src",
+    "./tasks",
+    "./tests",
+    "./typechain",
+    "./hardhat.config.ts"
+  ]
+}

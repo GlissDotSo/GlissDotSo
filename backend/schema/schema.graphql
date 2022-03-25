@@ -1,0 +1,21 @@
+type Query {
+    feed(id: ID!): Feed!
+}
+
+type Feed {
+  email: String!
+}
+
+input AuthenticationRequest {
+    address: String
+    signature: String
+}
+
+type AuthenticationResponse {
+    accessToken: String
+    refreshToken: String
+}
+
+type Mutation {
+    authenticate(request: AuthenticationRequest!): AuthenticationResponse
+}

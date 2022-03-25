@@ -14,15 +14,59 @@ export type Scalars = {
   Float: number;
 };
 
+export type AttentionMarketMakerBidData = {
+  __typename?: 'AttentionMarketMakerBidData';
+  amount: Scalars['Int'];
+  expiry: Scalars['Int'];
+  feedId: Scalars['Int'];
+  from: Scalars['String'];
+  pubId: Scalars['Int'];
+};
+
+export type AttentionMarketMakerMutation = {
+  __typename?: 'AttentionMarketMakerMutation';
+  bidAndUpdate?: Maybe<Scalars['Boolean']>;
+  fillAndUpdate?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type AttentionMarketMakerMutationBidAndUpdateArgs = {
+  bid?: InputMaybe<AttentionMarketMakerBidData>;
+  feedOracleMsg: Scalars['String'];
+};
+
+
+export type AttentionMarketMakerMutationFillAndUpdateArgs = {
+  feedId: Scalars['Int'];
+  feedOracleMsg: Scalars['String'];
+  roundId: Scalars['Int'];
+};
+
+export type AttentionMarketMakerQuery = {
+  __typename?: 'AttentionMarketMakerQuery';
+  getCurrentRoundInfo?: Maybe<CurrentRoundInfo>;
+  isRoundOpen: Scalars['Boolean'];
+};
+
+
+export type AttentionMarketMakerQueryGetCurrentRoundInfoArgs = {
+  feedOracleMsg: Scalars['String'];
+};
+
+
+export type AttentionMarketMakerQueryIsRoundOpenArgs = {
+  roundId: Scalars['Int'];
+};
+
 export type AuthenticationRequest = {
   message: DispatcherAuthMessage;
   signature: Scalars['String'];
 };
 
-export type AuthenticationResponse = {
-  __typename?: 'AuthenticationResponse';
-  accessToken?: Maybe<Scalars['String']>;
-  refreshToken?: Maybe<Scalars['String']>;
+export type CurrentRoundInfo = {
+  __typename?: 'CurrentRoundInfo';
+  numSlots: Scalars['Int'];
+  roundId: Scalars['Int'];
 };
 
 export type DispatcherAuthMessage = {
@@ -37,7 +81,8 @@ export type Feed = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  authenticate?: Maybe<AuthenticationResponse>;
+  attentionMarketMaker?: Maybe<AttentionMarketMakerMutation>;
+  authenticate?: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -47,6 +92,7 @@ export type MutationAuthenticateArgs = {
 
 export type Query = {
   __typename?: 'Query';
+  attentionMarketMaker?: Maybe<AttentionMarketMakerQuery>;
   feed: Feed;
 };
 
@@ -125,12 +171,16 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  AttentionMarketMakerBidData: ResolverTypeWrapper<AttentionMarketMakerBidData>;
+  AttentionMarketMakerMutation: ResolverTypeWrapper<AttentionMarketMakerMutation>;
+  AttentionMarketMakerQuery: ResolverTypeWrapper<AttentionMarketMakerQuery>;
   AuthenticationRequest: AuthenticationRequest;
-  AuthenticationResponse: ResolverTypeWrapper<AuthenticationResponse>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  CurrentRoundInfo: ResolverTypeWrapper<CurrentRoundInfo>;
   DispatcherAuthMessage: DispatcherAuthMessage;
   Feed: ResolverTypeWrapper<Feed>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
+  Int: ResolverTypeWrapper<Scalars['Int']>;
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
@@ -138,20 +188,45 @@ export type ResolversTypes = ResolversObject<{
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  AttentionMarketMakerBidData: AttentionMarketMakerBidData;
+  AttentionMarketMakerMutation: AttentionMarketMakerMutation;
+  AttentionMarketMakerQuery: AttentionMarketMakerQuery;
   AuthenticationRequest: AuthenticationRequest;
-  AuthenticationResponse: AuthenticationResponse;
   Boolean: Scalars['Boolean'];
+  CurrentRoundInfo: CurrentRoundInfo;
   DispatcherAuthMessage: DispatcherAuthMessage;
   Feed: Feed;
   ID: Scalars['ID'];
+  Int: Scalars['Int'];
   Mutation: {};
   Query: {};
   String: Scalars['String'];
 }>;
 
-export type AuthenticationResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthenticationResponse'] = ResolversParentTypes['AuthenticationResponse']> = ResolversObject<{
-  accessToken?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  refreshToken?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+export type AttentionMarketMakerBidDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttentionMarketMakerBidData'] = ResolversParentTypes['AttentionMarketMakerBidData']> = ResolversObject<{
+  amount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  expiry?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  feedId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  from?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pubId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AttentionMarketMakerMutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttentionMarketMakerMutation'] = ResolversParentTypes['AttentionMarketMakerMutation']> = ResolversObject<{
+  bidAndUpdate?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<AttentionMarketMakerMutationBidAndUpdateArgs, 'feedOracleMsg'>>;
+  fillAndUpdate?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<AttentionMarketMakerMutationFillAndUpdateArgs, 'feedId' | 'feedOracleMsg' | 'roundId'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AttentionMarketMakerQueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttentionMarketMakerQuery'] = ResolversParentTypes['AttentionMarketMakerQuery']> = ResolversObject<{
+  getCurrentRoundInfo?: Resolver<Maybe<ResolversTypes['CurrentRoundInfo']>, ParentType, ContextType, RequireFields<AttentionMarketMakerQueryGetCurrentRoundInfoArgs, 'feedOracleMsg'>>;
+  isRoundOpen?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<AttentionMarketMakerQueryIsRoundOpenArgs, 'roundId'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CurrentRoundInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurrentRoundInfo'] = ResolversParentTypes['CurrentRoundInfo']> = ResolversObject<{
+  numSlots?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  roundId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -161,15 +236,20 @@ export type FeedResolvers<ContextType = any, ParentType extends ResolversParentT
 }>;
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
-  authenticate?: Resolver<Maybe<ResolversTypes['AuthenticationResponse']>, ParentType, ContextType, RequireFields<MutationAuthenticateArgs, 'request'>>;
+  attentionMarketMaker?: Resolver<Maybe<ResolversTypes['AttentionMarketMakerMutation']>, ParentType, ContextType>;
+  authenticate?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationAuthenticateArgs, 'request'>>;
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  attentionMarketMaker?: Resolver<Maybe<ResolversTypes['AttentionMarketMakerQuery']>, ParentType, ContextType>;
   feed?: Resolver<ResolversTypes['Feed'], ParentType, ContextType, RequireFields<QueryFeedArgs, 'id'>>;
 }>;
 
 export type Resolvers<ContextType = any> = ResolversObject<{
-  AuthenticationResponse?: AuthenticationResponseResolvers<ContextType>;
+  AttentionMarketMakerBidData?: AttentionMarketMakerBidDataResolvers<ContextType>;
+  AttentionMarketMakerMutation?: AttentionMarketMakerMutationResolvers<ContextType>;
+  AttentionMarketMakerQuery?: AttentionMarketMakerQueryResolvers<ContextType>;
+  CurrentRoundInfo?: CurrentRoundInfoResolvers<ContextType>;
   Feed?: FeedResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;

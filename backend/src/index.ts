@@ -9,6 +9,7 @@ import { Resolvers } from "./generated/resolvers-types";
 
 // Resolvers
 import { authenticate } from './authenticate'
+import { attentionMarketMaker } from './resolvers/attention_mm'
 
 // GraphQL type definitions.
 const typeDefs = gql(
@@ -16,8 +17,12 @@ const typeDefs = gql(
 )
 
 const resolvers: Resolvers = {
+    Query: {
+        attentionMarketMaker: attentionMarketMaker as any
+    },
     Mutation: {
-        authenticate
+        authenticate,
+        attentionMarketMaker: attentionMarketMaker as any
     }
 };
 

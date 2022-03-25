@@ -54,7 +54,7 @@ export class FeedEngine implements IActor {
 
         // iterate array backwards.
         // worst case O(N)
-        const pubs = this.indexer.getPubs()
+        const pubs = this.indexer.getFollowerPubs()
 
         // Reverse chronological array of posts in this interval.
         let postsInInterval: Publication[] = []

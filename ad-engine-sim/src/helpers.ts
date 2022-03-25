@@ -63,3 +63,5 @@ export class Counter {
         return Object.entries(this.store)
     }
 }
+
+export const formatPercent = (x: number) => `${Math.floor(x * 100)}%`

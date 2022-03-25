@@ -1,13 +1,15 @@
 import chalk from 'chalk';
 import { InfluenceBuyer } from '../actors/influence_buyer';
 import { Poster } from '../actors/poster';
-import { EVMEnvironment } from '../helpers';
+import { EVMEnvironment, formatPercent } from '../helpers';
 import { IActor } from '../simulation/actor';
-import { feedEngine, NUM_MOCK_USERS, protocol, simulation } from '../simulation/setup';
+import { attentionMarketMaker, feedEngine, NUM_MOCK_USERS, protocol, simulation } from '../simulation/setup';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 import _ from 'lodash';
 import { Counter } from '../helpers'
+
+const DEBUG = process.env.DEBUG
 export class Simulation {
     // One time step is a second in our model.
     // Length of simulation is 4hrs.
@@ -43,13 +45,21 @@ export class Simulation {
             postsAtTime.inc([this.time], 1)
         })
 
+        attentionMarketMaker.events.on('RoundCreated', args => {
+            const { feedId, roundId, numSlots } = args
+            if(DEBUG) console.log(`RoundCreated round=${roundId} numSlots=${numSlots}`)
+        })
+
         // Run simulation.
         for (let i = 0; i < this.totalTimesteps; i++) {
             this.step()
         }
 
         // Render the feed for the past 60mins.
-        const feed = feedEngine.getFeed("", this.time - 60 * 60)
+        // const feed = feedEngine.getFeed("", this.time - 60 * 60)
+        const feed = feedEngine.getFeed("", 0)
+
+        // Output feed.
         const PROMOTED = '[promoted]'
         feed.map(item => {
             let str = [
@@ -70,6 +80,23 @@ export class Simulation {
             const faf = feedEngine.getFeedActivityFactor(feedId, i)
             feedActivityData.push([i, faf])
         }
+
+        let posts = 0
+        let ads = 0
+        for (let post of feed) {
+            if(post.bid) ads++
+            else posts++
+        }
+        const totalPosts = feed.length
+        console.log(`follower posts: ${posts} (${formatPercent(posts / totalPosts)})`)
+        console.log(`promoter posts: ${ads} (${formatPercent(ads / totalPosts)})`)
+        console.log(`   total posts: ${totalPosts}`)
+        console.log(``)
+        console.log(`feed invariant results (% ads)`)
+        console.log(`  target = ${formatPercent(protocol.riskFactor)}`)
+        console.log(`observed = ${formatPercent(ads / posts)}`)
+
+
 
         for(let i = 0; i < this.totalTimesteps; i++) {
             let cumulativePosts = 0
@@ -97,7 +124,7 @@ export class Simulation {
     }
 
     step() {
-        if (process.env.DEBUG) console.log(this.time)
+        if (DEBUG) console.log(this.time)
 
         // Sync EVM with clock time with delay (to mimic the chain).
         if (this.time % 5 === 0) {

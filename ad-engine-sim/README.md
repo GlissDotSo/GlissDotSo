@@ -2,10 +2,10 @@ Attention-mechanised feed - simulation
 ======================================
 
 Simulation:
-Create 25 profiles
-For each profile, create some posts
-Over a period of 24hrs.
-Now post some ads
-Render the feed
-@username @time @isPromoted
-Verify invariant holds
+
+ 1. Create 25 profiles
+ 2. For each profile, create some posts
+ 3. Over a period of 24hrs. 
+   1. Post ads.
+ 4. Render the feed
+ 5. Verify invariant holds

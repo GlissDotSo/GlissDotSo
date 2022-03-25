@@ -1,6 +1,6 @@
 import _, { orderBy, sortBy } from "lodash"
 import { Protocol } from "./protocol"
-import { Publication } from "./types"
+import { EthAddress, FeedId, Publication } from "./types"
 import { EventEmitter } from 'events'
 import { EVMEnvironment, SmartContract } from "./helpers"
 import { AttentionToken } from "./attention_token"
@@ -28,7 +28,9 @@ export interface Bid {
 }
 
 interface BidRound {
-    expires: number
+    closesAt: number
+    finalised: boolean
+    numSlots: number
     bids: Bid[]
 }
 
@@ -38,13 +40,27 @@ export interface FillEvent {
     bid: Bid
 }
 
-type FeedId = string
-type EthAddress = string
 
+/**
+ * The attention market maker runs fixed-length auctions for a dynamic
+ * number of "ad slots" in a user's feed. 
+ * 
+ * Auctions are organised into rounds, which occur on a regular schedule.
+ * There are a fixed number of "ad slots" for sale each round, which is
+ * computed from the feed activity factor (see `getMaxAttentionSlotsForFeed()`).
+ * 
+ * There are two phases for a round:
+ *  1. bidding
+ *  2. finalisation
+ * 
+ * Bidding is open until block.timestamp == round.closesAt, at which point,
+ * any user may call `fillAndUpdate` in order to finalise the auction and fill
+ * all of the winning bids.
+ */
 export class AttentionMarketMaker extends SmartContract {
     protocol: Protocol
     attention: AttentionToken
-    feedActivityFactor: Record<FeedId, FeedActivityFactorMessage> = {}
+    rateOfPostsPerSecond: Record<FeedId, FeedActivityFactorMessage> = {}
     bids: Record<FeedId, Record<number, BidRound>> = {}
     events = new EventEmitter()
     roundLength = 15
@@ -57,18 +73,32 @@ export class AttentionMarketMaker extends SmartContract {
         this.attention = attention
     }
 
-    bid(bid: AttentionMarketMakerBidData): number {
-        const currentRound = this.getCurrentRound()
-        let round = _.get(this.bids, [bid.feedId, currentRound], null)
-        if(!round) {
-            round = {
-                expires: this.env.time + this.roundLength,
-                bids: []
-            }
-            this.events.emit('RoundCreated', { feedId: bid.feedId, roundId: currentRound })
+    private createRound(feedId: string) {
+        const numSlots = this.getMaxAttentionSlotsForFeed(feedId)
+        if (numSlots == 0) throw new Error("No slots in round");
+
+        const sinceLastUpdate = this.env.time - this.roundLengthLastUpdated
+        const roundsSinceLastUpdate = Math.floor(sinceLastUpdate / this.roundLength)
+
+        const round = {
+            closesAt: (roundsSinceLastUpdate + 1) * this.roundLength,
+            bids: [],
+            finalised: false,
+            numSlots
         }
 
-        if (this.env.time > round.expires) throw new Error("Round is closed.");
+        return round
+    }
+
+    bid(bid: AttentionMarketMakerBidData): number {
+        const roundId = this.getCurrentRound()
+        let round = _.get(this.bids, [bid.feedId, roundId], null)
+        if (!round) {
+            round = this.createRound(bid.feedId)
+            this.events.emit('RoundCreated', { feedId: bid.feedId, roundId: roundId, numSlots: round.numSlots })
+        }
+
+        if (!this._isRoundOpen(round)) throw new Error("Bidding is closed.");
         
         // Effect: transfer funds from msg.sender.
         this.attention.transfer(bid.feedId, bid.from, this.address, bid.amount)
@@ -81,12 +111,9 @@ export class AttentionMarketMaker extends SmartContract {
             'desc'
         )
         // 3. If the array now exceeds `maxSlots`, cancel the last bid.
-        const numSlots = this.getMaxAttentionSlotsForFeed(bid.feedId)
-        // console.log(numSlots)
-
-        while(sortedBids.length > numSlots) {
+        while(sortedBids.length > round.numSlots) {
             const kickedBid = sortedBids.pop() as Bid
-            this.events.emit('BidCancelled', { feedId: bid.feedId, roundId: currentRound, bid })
+            this.events.emit('BidCancelled', { feedId: bid.feedId, roundId, bid })
 
             // Refund bid amount.
             this.attention.transfer(bid.feedId, this.address, kickedBid.from, kickedBid.amount)
@@ -94,11 +121,11 @@ export class AttentionMarketMaker extends SmartContract {
 
         // Effect: save bids.
         round.bids = sortedBids
-        _.set(this.bids, [bid.feedId, currentRound], round)
+        _.set(this.bids, [bid.feedId, roundId], round)
 
-        this.events.emit('Bid', { feedId: bid.feedId, roundId: currentRound, bid })
+        this.events.emit('Bid', { feedId: bid.feedId, roundId, bid })
 
-        return currentRound
+        return roundId
     }
 
     bidAndUpdate(bid: Bid, update: FeedActivityFactorMessage) {
@@ -107,31 +134,42 @@ export class AttentionMarketMaker extends SmartContract {
     }
 
     getCurrentRound(): number {
-        const roundsSinceUpdate = (this.env.time - this.roundLengthLastUpdated) / this.roundLength
+        const roundsSinceUpdate = Math.floor((this.env.time - this.roundLengthLastUpdated) / this.roundLength)
         return this.cumulativeRounds + roundsSinceUpdate
+    }
+
+    getCurrentRoundInfo(update: FeedActivityFactorMessage) {
+        const roundId = this.getCurrentRound()
+        const numSlots = this._getMaxAttentionSlots(update.feedActivityFactor, this.roundLength)
+        return { roundId, numSlots }
     }
 
     setRoundLength(length: number) {
         this.cumulativeRounds = this.getCurrentRound()
-        this.roundLengthLastUpdated = Date.now()
+        this.roundLengthLastUpdated = this.env.time
         this.roundLength = length
     }
 
     isRoundOpen(feedId: FeedId, roundId: number) {
         const round = _.get(this.bids, [feedId, roundId], null)
         if (!round) throw new Error(`No round ${roundId}`)
-        return round.expires < this.env.time
+        return this._isRoundOpen(round)
+    }
+
+    _isRoundOpen(round: BidRound) {
+        return (this.env.time < round.closesAt)
     }
 
     fillAndUpdate(feedActivityFactorMessage: FeedActivityFactorMessage, feedId: FeedId, roundId: number) {
         // Verify round has ended.
         const round = this.bids[feedId][roundId]
-        if (round.expires < this.env.time) throw new Error("Round still open.");
+        if (this._isRoundOpen(round)) throw new Error("Round still open.");
+        if (round.finalised) throw new Error("Round already finalised.");
 
         // Fill bids for most recent round.
         const bids = round.bids
         // console.log(bids)
-        const maxAttentionSlots = this.getMaxAttentionSlotsForFeed(feedId)
+        const maxAttentionSlots = round.numSlots
         
         if (maxAttentionSlots > 0 && bids.length) {
             // Get highest priced bids first.
@@ -146,13 +184,14 @@ export class AttentionMarketMaker extends SmartContract {
 
         // Begin next round.
         this.events.emit('RoundClosed', { feedId, roundId })
+        round.finalised = true
 
         this.updateFromOracle(feedId, feedActivityFactorMessage)
     }
 
     updateFromOracle(feedId: string, feedActivityFactorMessage: FeedActivityFactorMessage) {
         // Update feed activity factor from oracle.
-        this.feedActivityFactor[feedId] = feedActivityFactorMessage
+        this.rateOfPostsPerSecond[feedId] = feedActivityFactorMessage
     }
 
     // Compute the number of slots we are selling in a feed for its current auction round.
@@ -160,8 +199,15 @@ export class AttentionMarketMaker extends SmartContract {
     //   num(ads) + num(posts) = num(posts) * [1 + r]
     // This ensures the feed is at most r% composed of ads.
     getMaxAttentionSlotsForFeed(feedId: string): number {
-        const numPosts = this.roundLength * _.get(this.feedActivityFactor, [feedId, 'feedActivityFactor'], 0)
-        let maxAttentionSlots = numPosts * (1 + this.protocol.riskFactor) - numPosts
-        return maxAttentionSlots
+        return this._getMaxAttentionSlots(
+            _.get(this.rateOfPostsPerSecond, [feedId, 'feedActivityFactor'], 0),
+            this.roundLength
+        )
+    }
+
+    _getMaxAttentionSlots(feedActivityFactor: number, roundLength: number) {
+        const numPostsPerRound = roundLength * feedActivityFactor
+        const maxAttentionSlots = numPostsPerRound * (1 + this.protocol.riskFactor) - numPostsPerRound
+        return Math.floor(maxAttentionSlots)
     }
 }

@@ -38,11 +38,11 @@ export class Indexer {
         this.promotedPubs[pub.id] = promotedPub
     }
 
-    getPubs(): Publication[] {
+    getPubs() {
         return Object.values(this.pubs)
     }
 
-    getPromotedPubs(): PromotedPublication[] {
+    getPromotedPubs() {
         return Object.values(this.promotedPubs)
     }
 
@@ -52,7 +52,7 @@ export class Indexer {
             this.getPubs(),
             pub => {
                 // In prod, this would filter by posts only from a user's following.
-                return pub.profileId.startsWith(BIDDER_PROFILE_PREFIX)
+                return !pub.profileId.startsWith(BIDDER_PROFILE_PREFIX)
             }
         ) as Publication[]
     }

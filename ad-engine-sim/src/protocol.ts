@@ -9,7 +9,7 @@ export interface CreatePubArgs {
 }
 
 export class Protocol {
-    riskFactor = 0.1
+    riskFactor = 0.55
     pubCount = 0
     events = new EventEmitter()
 

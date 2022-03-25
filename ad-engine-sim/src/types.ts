@@ -5,3 +5,7 @@ export interface Publication {
 }
 
 export type ProfileId = string
+
+export type FeedId = string
+
+export type EthAddress = string

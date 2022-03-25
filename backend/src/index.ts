@@ -7,26 +7,19 @@ import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
 import { gql } from 'apollo-server'
 import { Resolvers } from "./generated/resolvers-types";
 
+// Resolvers
+import { authenticate } from './authenticate'
+
 // GraphQL type definitions.
 const typeDefs = gql(
     readFileSync(join(__dirname, '../schema/schema.graphql')).toString()
 )
 
-
-import { verifyTypedData } from 'ethers/lib/utils';
-
 const resolvers: Resolvers = {
     Mutation: {
-        authenticate: (parent, args, context, info) => {
-            const { signature, address } = args.request
-            
-            // console.log(parent, args, context, info)
-            return null
-        }
+        authenticate
     }
 };
-
-
 
 async function start(
     typeDefs?: any,

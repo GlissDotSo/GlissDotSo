@@ -7,8 +7,13 @@ type Feed {
 }
 
 input AuthenticationRequest {
-    address: String
-    signature: String
+    message: DispatcherAuthMessage!
+    signature: String!
+}
+
+input DispatcherAuthMessage {
+    mainWallet: String!
+    sessionWalletPubkey: String!
 }
 
 type AuthenticationResponse {

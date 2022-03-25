@@ -15,14 +15,19 @@ export type Scalars = {
 };
 
 export type AuthenticationRequest = {
-  address?: InputMaybe<Scalars['String']>;
-  signature?: InputMaybe<Scalars['String']>;
+  message: DispatcherAuthMessage;
+  signature: Scalars['String'];
 };
 
 export type AuthenticationResponse = {
   __typename?: 'AuthenticationResponse';
   accessToken?: Maybe<Scalars['String']>;
   refreshToken?: Maybe<Scalars['String']>;
+};
+
+export type DispatcherAuthMessage = {
+  mainWallet: Scalars['String'];
+  sessionWalletPubkey: Scalars['String'];
 };
 
 export type Feed = {
@@ -50,7 +55,8 @@ export type QueryFeedArgs = {
   id: Scalars['ID'];
 };
 
-
+export type WithIndex<TObject> = TObject & Record<string, any>;
+export type ResolversObject<TObject> = WithIndex<TObject>;
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
@@ -118,52 +124,54 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 ) => TResult | Promise<TResult>;
 
 /** Mapping between all available schema types and the resolvers types */
-export type ResolversTypes = {
+export type ResolversTypes = ResolversObject<{
   AuthenticationRequest: AuthenticationRequest;
   AuthenticationResponse: ResolverTypeWrapper<AuthenticationResponse>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  DispatcherAuthMessage: DispatcherAuthMessage;
   Feed: ResolverTypeWrapper<Feed>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
-};
+}>;
 
 /** Mapping between all available schema types and the resolvers parents */
-export type ResolversParentTypes = {
+export type ResolversParentTypes = ResolversObject<{
   AuthenticationRequest: AuthenticationRequest;
   AuthenticationResponse: AuthenticationResponse;
   Boolean: Scalars['Boolean'];
+  DispatcherAuthMessage: DispatcherAuthMessage;
   Feed: Feed;
   ID: Scalars['ID'];
   Mutation: {};
   Query: {};
   String: Scalars['String'];
-};
+}>;
 
-export type AuthenticationResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthenticationResponse'] = ResolversParentTypes['AuthenticationResponse']> = {
+export type AuthenticationResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthenticationResponse'] = ResolversParentTypes['AuthenticationResponse']> = ResolversObject<{
   accessToken?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   refreshToken?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
+}>;
 
-export type FeedResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feed'] = ResolversParentTypes['Feed']> = {
+export type FeedResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feed'] = ResolversParentTypes['Feed']> = ResolversObject<{
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
+}>;
 
-export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   authenticate?: Resolver<Maybe<ResolversTypes['AuthenticationResponse']>, ParentType, ContextType, RequireFields<MutationAuthenticateArgs, 'request'>>;
-};
+}>;
 
-export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   feed?: Resolver<ResolversTypes['Feed'], ParentType, ContextType, RequireFields<QueryFeedArgs, 'id'>>;
-};
+}>;
 
-export type Resolvers<ContextType = any> = {
+export type Resolvers<ContextType = any> = ResolversObject<{
   AuthenticationResponse?: AuthenticationResponseResolvers<ContextType>;
   Feed?: FeedResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
-};
+}>;
 

@@ -1,0 +1,60 @@
+type Query {
+    feed(id: ID!): Feed!
+
+    attentionMarketMaker: AttentionMarketMakerQuery
+}
+
+type Mutation {
+    authenticate(request: AuthenticationRequest!): Boolean
+
+    attentionMarketMaker: AttentionMarketMakerMutation
+}
+
+# Queries.
+# 
+
+type AttentionMarketMakerQuery {
+    isRoundOpen(roundId: Int!): Boolean!
+    getCurrentRoundInfo(feedOracleMsg: String!): CurrentRoundInfo
+}
+
+type AttentionMarketMakerMutation {
+    fillAndUpdate(feedOracleMsg: String!, feedId: Int!, roundId: Int!): Boolean
+    bidAndUpdate(bid: AttentionMarketMakerBidData, feedOracleMsg: String!): Boolean
+}
+
+type CurrentRoundInfo {
+    roundId: Int!
+    numSlots: Int!
+}
+
+type AttentionMarketMakerBidData {
+    feedId: Int!
+    pubId: Int!
+    amount: Int!
+    from: String!
+    expiry: Int!
+}
+
+type Feed {
+  email: String!
+}
+
+# Mutations.
+# 
+
+input AuthenticationRequest {
+    message: DispatcherAuthMessage!
+    signature: String!
+}
+
+input DispatcherAuthMessage {
+    mainWallet: String!
+    sessionWalletPubkey: String!
+}
+
+# type AuthenticationResponse {
+#     accessToken: String
+#     refreshToken: String
+# }
+
